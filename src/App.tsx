@@ -1,93 +1,89 @@
-import React, { useState } from "react";
-import { Routes, Route, Link } from "react-router-dom";
-import './App.css';
-import Form from 'react-bootstrap/Form';
+import React, { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import "./App.css";
+import { Nav, Navbar } from "react-bootstrap";
+import { getAuth, signOut, onAuthStateChanged, UserCredential } from "firebase/auth";
+import toast, { Toaster } from "react-hot-toast";
+import SignUp from "./pages/SignUp";
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
 
 
 function App() {
+  const auth = getAuth();
+  const localStorage = window.localStorage;
+
+  var [user, setUser] = useState<UserCredential["user"]>();
+
+  useEffect(() => {
+    console.log("refresh");
+    authUser();
+  }, [user]);
+
+  function authUser() {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        //User is signed in
+        localStorage.setItem("isLoggedIn", "true");
+      } else {
+        //user signed out
+        localStorage.removeItem("isLoggedIn");
+      }
+    });
+  }
+
+  function logoutUser() {
+    signOut(auth).then(() => {
+      window.location.href = "/";
+      toast.success("Logged Out!");
+    }).catch((error) => {
+      toast.error(error.message);
+    });
+  }
+
   return (
     <div className="App">
-      <nav className="bg-white opacity-50 h-10 space-x-10 p-2 font-bold">
-        <Link to="/">Home</Link>
-        <Link to="/about">About</Link>
-      </nav>
-      
+      <div>
+        <Toaster />
+      </div>
+      <Navbar expand="sm" className="flex items-center p-3 bg-white/50">
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse
+          id="basic-navbar-nav"
+          className="flex space-x-5 ml-4 items-center w-screen font-bold"
+        >
+          <Nav className="mr-auto flex ml-4">
+            {!JSON.parse(localStorage.getItem("isLoggedIn")!) && (
+              <Nav.Link className="p-0" href="/">
+                Home
+              </Nav.Link>
+            )}
+            {JSON.parse(localStorage.getItem("isLoggedIn")!) && (
+              <Nav.Link className="p-0" href="/dashboard">
+                Dashboard
+              </Nav.Link>
+            )}
+          </Nav>
+          <div className="flex-grow"></div>
+          <Nav>
+            {!JSON.parse(localStorage.getItem("isLoggedIn")!) && (
+              <Nav.Link href="/signup">Sign Up</Nav.Link>
+            )}
+            {JSON.parse(localStorage.getItem("isLoggedIn")!) && (
+              <Nav.Link className="bg-red-500 rounded-lg p-2">
+                <button onClick={logoutUser}><p className="font-bold text-white">Logout</p></button>
+              </Nav.Link>
+            )}
+          </Nav>
+        </Navbar.Collapse>
+      </Navbar>
+
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="about" element={<About />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </div>
-  );
-}
-
-const Home = () => {
-  const [SIEmailAddress, setSIEmailAddress] = useState<string>("");
-  const [SIPassword, setSIPassword] = useState<string>("");
-    
-  const SIEmailAddressHandler = (e: any) => {
-    setSIEmailAddress(e.target.value);
-  };
-  
-  const SIPasswordHandler = (e: any) => {
-    setSIPassword(e.target.value);
-  };
-    
-  return (
-    <>
-      <main>
-        <h1 className="text-4xl text-center font-bold p-5">COHS AP Research Connect</h1>
-        
-        {/* Sign In Hero */}
-        <div className="bg-white opacity-75 p-3 rounded-lg flex flex-col max-w-lg space-y-5">
-          <h2 className="text-center text-2xl font-bold">Sign In</h2>
-          <div className="flex flex-col">
-            <Form.Label className="font-bold">Email:</Form.Label>
-            <Form.Control
-              value={SIEmailAddress}
-              onChange={SIEmailAddressHandler}
-              type="text"
-              id="username"
-              aria-describedby="userNameHelpBlock"
-              className="bg-white opacity-75 border-2 border-solid border-black rounded-md p-1"
-            />
-            <Form.Text id="userNameHelpBlock" muted>
-              Must be a valid, registered email.
-            </Form.Text>
-          </div>
-         
-          <div className="flex flex-col">
-            <Form.Label className="font-bold">Password:</Form.Label>
-            <Form.Control
-              value={SIPassword}
-              onChange={SIPasswordHandler}
-              type="password"
-              id="inputPassword5"
-              aria-describedby="passwordHelpBlock"
-              className="bg-white opacity-75 border-2 border-solid border-black rounded-md p-1"
-            />
-            <Form.Text id="passwordHelpBlock" muted>
-              Your password must be 8-20 characters long, contain letters and numbers,
-              and must not contain spaces, special characters, or emoji.
-            </Form.Text>
-          </div>
-        </div>
-      </main>
-    </>
-  );
-}
-
-
-const About = () => {
-  return (
-    <>
-      <main>
-        <h2>Who are we?</h2>
-        <p>
-          That feels like an existential question, don't you
-          think?
-        </p>
-      </main>
-    </>
   );
 }
 
