@@ -6,7 +6,8 @@ import { getAuth, signOut, onAuthStateChanged, UserCredential } from "firebase/a
 import toast, { Toaster } from "react-hot-toast";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
+import Discover from "./pages/Discover";
+// import { collection, query, where, onSnapshot } from "firebase/firestore";
 
 
 function App() {
@@ -59,8 +60,8 @@ function App() {
               </Nav.Link>
             )}
             {JSON.parse(localStorage.getItem("isLoggedIn")!) && (
-              <Nav.Link className="p-0" href="/dashboard">
-                Dashboard
+              <Nav.Link className="p-0" href="/discover">
+                Discover
               </Nav.Link>
             )}
           </Nav>
@@ -81,7 +82,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/discover" element={<Discover />} />
       </Routes>
     </div>
   );

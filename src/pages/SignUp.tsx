@@ -6,16 +6,8 @@ import { Button } from "react-bootstrap";
 import Select from "react-select";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import toast from "react-hot-toast";
+import { SelectOption } from "../Interfaces+Classes";
 
-interface SelectOption {
-  value: string;
-  label: string;
-}
-
-interface User {
-  studentUID: string;
-  docID: string;
-}
 
 const SignUp = () => {
   const [SUEmailAddress, setSUEmailAddress] = useState<string>("");
@@ -24,6 +16,7 @@ const SignUp = () => {
   const [SUFirstName, setSUFirstName] = useState<string>("");
   const [SULastName, setSULastName] = useState<string>("");
   const [options, setOptions] = useState<SelectOption[]>([]);
+  const [selectedOption, setSelectedOption] = useState<SelectOption>();
 
   useEffect(() => {
     getAvailableGraduatingYears();
@@ -49,9 +42,11 @@ const SignUp = () => {
           lastName: SULastName.trim(),
           studentUID: user.uid,
           studentDocID: newUserRef.id,
+          graduatingYear: selectedOption?.value,
+          isAdmin: false
         });
         toast.success("Sign Up Successful! Redirecting...");
-        window.location.href = "/dashboard";
+        window.location.href = "/discover";
         console.log("user logged in");
       })
       .catch((error) => {
@@ -120,6 +115,10 @@ const SignUp = () => {
   const SULastNameHandler = (e: any) => {
     setSULastName(e.target.value);
   };
+
+  const selectGraduatingYearHandler = (selectedOption: any) => {
+    setSelectedOption(selectedOption);
+  }
 
   return (
     <>
@@ -207,6 +206,7 @@ const SignUp = () => {
           <div>
             <Form.Label className="font-bold">Graduating Year:</Form.Label>
             <Select
+              onChange={selectGraduatingYearHandler}
               options={options}
               placeholder={"Select your Graduating Class Year"}
             />

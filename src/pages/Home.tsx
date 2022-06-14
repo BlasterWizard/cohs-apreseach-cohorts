@@ -15,7 +15,7 @@ const Home = () => {
       .then((userCredential) => {
         // Signed in
         // const user = userCredential.user;
-        window.location.href = "/dashboard";
+        window.location.href = "/discover";
         toast.success("Logged In! Welcome!");
       })
       .catch((error) => {
