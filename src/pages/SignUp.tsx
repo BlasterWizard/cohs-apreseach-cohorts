@@ -7,6 +7,7 @@ import Select from "react-select";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import toast from "react-hot-toast";
 import { SelectOption } from "../Interfaces+Classes";
+import { getAvailableGraduatingYears } from "../HelperFunctions";
 
 
 const SignUp = () => {
@@ -19,7 +20,7 @@ const SignUp = () => {
   const [selectedOption, setSelectedOption] = useState<SelectOption>();
 
   useEffect(() => {
-    getAvailableGraduatingYears();
+    fetchAvailableGraduatingYears();
   }, []);
 
   const signUpUser = () => {
@@ -29,6 +30,11 @@ const SignUp = () => {
       }
     }
   };
+
+  async function fetchAvailableGraduatingYears() {
+    let options = await getAvailableGraduatingYears();
+    setOptions(options);
+  }
 
   async function createUserInFirestore() {
     const auth = getAuth();
@@ -81,21 +87,7 @@ const SignUp = () => {
     toast.error("Passwords Must Match. Please try again.");
     return false;
   }
-
-  async function getAvailableGraduatingYears() {
-    const availableGraduatingYearsSnap = await getDoc(
-      doc(db, "settings", "availableGraduatingYears")
-    );
-    if (availableGraduatingYearsSnap.exists()) {
-      setOptions([]);
-      availableGraduatingYearsSnap.data().years.forEach((year: string) => {
-        setOptions((options) => [...options, { value: year, label: year }]);
-      });
-    } else {
-      console.log("Can't Find Doc");
-    }
-  }
-
+  
   const SUEmailAddressHandler = (e: any) => {
     setSUEmailAddress(e.target.value);
   };

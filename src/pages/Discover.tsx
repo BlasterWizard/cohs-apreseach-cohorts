@@ -67,9 +67,10 @@ const Discover = () => {
       <main>
       {
         cohortGroups.map((cohortGroup: CohortGroup, index: number) => {
-          return <div key={index} className="m-5">
-            <h3 className="font-bold">{cohortGroup.year}</h3>
+          return <div key={index} className="m-5 w-full space-y-5">
+            <h3 className="font-bold text-3xl">{cohortGroup.year}</h3>
             <DiscoverUsersView users={cohortGroup.users}/>
+            <hr/>
           </div>
         })
       }
@@ -91,11 +92,11 @@ const DiscoverUsersView: React.FC<DiscoverUsersViewProps> = ({ users }) => {
 
   function determineCorrectGridClassname() {
     if (users.length == 1) {
-      setGridClassname("grid grid-cols-1 gap-5");
+      setGridClassname("grid grid-cols-1 gap-5 w-fit");
     } else if (users.length == 2) {
-      setGridClassname("grid grid-cols-2 gap-5");
+      setGridClassname("grid grid-cols-2 gap-5 w-fit");
     } else {
-      setGridClassname("grid grid-cols-3 gap-5");
+      setGridClassname("grid grid-cols-3 gap-5 w-fit");
     }
   }
 

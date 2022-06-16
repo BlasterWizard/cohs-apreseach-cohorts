@@ -7,7 +7,10 @@ import toast, { Toaster } from "react-hot-toast";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import Discover from "./pages/Discover";
-// import { collection, query, where, onSnapshot } from "firebase/firestore";
+import Profile from "./pages/Profile";
+import { User, userConverter } from "./Interfaces+Classes";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import db from "./firebase";
 
 
 function App() {
@@ -15,6 +18,10 @@ function App() {
   const localStorage = window.localStorage;
 
   var [user, setUser] = useState<UserCredential["user"]>();
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<User>();
+
+  const allUsersQuery = query(collection(db, "users").withConverter(userConverter));
 
   useEffect(() => {
     console.log("refresh");
@@ -24,8 +31,10 @@ function App() {
   function authUser() {
     onAuthStateChanged(auth, (user) => {
       if (user) {
+        fetchAndListenToAllUsers(user);
         //User is signed in
         localStorage.setItem("isLoggedIn", "true");
+        setUser(user);
       } else {
         //user signed out
         localStorage.removeItem("isLoggedIn");
@@ -42,6 +51,22 @@ function App() {
     });
   }
 
+  function fetchAndListenToAllUsers(user: UserCredential["user"]) {
+    const unsubscribeToAllUsers = onSnapshot(allUsersQuery, (querySnapshot) => {
+      const users: User[] = [];
+      querySnapshot.forEach((doc) => {
+        if (doc.data().studentUID === user?.uid) {
+          console.log("got current user");
+          //get current user
+          setCurrentUser(doc.data());
+        }
+        users.push(doc.data());
+      });
+      setUsers(users);
+    });
+    console.log(currentUser);
+  }
+
   return (
     <div className="App">
       <div>
@@ -53,7 +78,7 @@ function App() {
           id="basic-navbar-nav"
           className="flex space-x-5 ml-4 items-center w-screen font-bold"
         >
-          <Nav className="mr-auto flex ml-4">
+          <Nav className="mr-auto flex ml-4 space-x-5">
             {!JSON.parse(localStorage.getItem("isLoggedIn")!) && (
               <Nav.Link className="p-0" href="/">
                 Home
@@ -62,6 +87,11 @@ function App() {
             {JSON.parse(localStorage.getItem("isLoggedIn")!) && (
               <Nav.Link className="p-0" href="/discover">
                 Discover
+              </Nav.Link>
+            )}
+            {JSON.parse(localStorage.getItem("isLoggedIn")!) && (
+              <Nav.Link className="p-0" href="/profile">
+                Profile
               </Nav.Link>
             )}
           </Nav>
@@ -83,6 +113,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/discover" element={<Discover />} />
+        <Route path="/profile" element={<Profile user={user} currentUser={currentUser}/>} />
       </Routes>
     </div>
   );
