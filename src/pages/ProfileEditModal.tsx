@@ -8,6 +8,9 @@ import db from "../firebase";
 import { SelectOption } from "../Interfaces+Classes";
 import Select from "react-select";
 import toast from "react-hot-toast";
+import { deleteObject, getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
+import ProfilePicture from "../components/ProfilePicture";
+import Spinner from 'react-bootstrap/Spinner';
 
 interface ProfileEditModalProps {
 	handleEditModal: () => void;
@@ -17,6 +20,7 @@ interface ProfileEditModalProps {
 }
 
 const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, handleEditModal, currentUser, user }) => {
+	const [imgUrl, setImgUrl] = useState<string>("");
 	const [PEMFirstName, setPEMFirstName] = useState("");
 	const [PEMLastName, setPEMLastName] = useState("");
 	const [PEMEmail, setPEMEmail] = useState("");
@@ -40,8 +44,10 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, hand
 	];
 	const [APResearchScore, setAPResearchScore] = useState<SelectOption>(APTestScoreOptions[5]);
 	const [APSeminarScore, setAPSeminarScore] = useState<SelectOption>(APTestScoreOptions[5]);
+	const [profilePicUploadFinished, setProfilePicUploadFinished] = useState<boolean>(true);
 	
 	useEffect(() => {
+		setImgUrl(currentUser?.profilePictureURL ?? "");
 		setPEMFirstName(currentUser?.firstName ?? "");
 		setPEMLastName(currentUser?.lastName ?? "");
 		setPEMEmail(user?.email ?? "");
@@ -73,7 +79,8 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, hand
 				apInfo: {
 					APResearchScore: APResearchScore.value,
 					APSeminarScore: APSeminarScore.value
-				}
+				},
+				profilePictureURL: imgUrl
 			}).then(() => {
 				toast.success("Profile Changes Saved!");
 			}).catch((error) => {
@@ -87,13 +94,61 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, hand
 	const selectAPSeminarScoreSelectOptionHandler = (selectedOption: any) => { setAPSeminarScore(selectedOption); }
 	const selectAPResearchScoreSelectOptionHandler = (selectedOption: any) => { setAPResearchScore(selectedOption); }
 
+	const uploadProfileImageToFirestore = (e: any) => {
+		e.preventDefault();
+		const file = e.target[0]?.files[0];
+		if (!file) {
+			toast.error("Can't find File");
+			return;
+		}
+		const storage = getStorage();
+		let refName = `profileImages/${currentUser?.studentUID}.jpg`;
+		const profileImagesRef = ref(storage, refName);
+		const uploadTask = uploadBytesResumable(profileImagesRef, file);
+
+		//delete any existing profile image from the same user
+		deleteObject(profileImagesRef).then(() => {
+			console.log("File Deleted Successfully");
+		});
+		uploadTask.on("state_changed", (snapshot) => {
+			setProfilePicUploadFinished(false);
+		}, (error) => {
+			toast.error(error.message);
+		},
+		() => {
+				getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+					setImgUrl(downloadURL);
+					toast.success("Profile Picture Upload Success!");
+					setProfilePicUploadFinished(true);
+				});
+			}
+		);
+	}
+
 	return (
 		<Modal show={showEditModal} onHide={handleEditModal} centered scrollable>
 		    <Modal.Header closeButton>
 		          <Modal.Title>Edit Profile</Modal.Title>
 	        </Modal.Header>
 	        <Modal.Body>
-	        	 <Form>
+				<ProfilePicture user={currentUser} imgUrl={imgUrl} />
+				{/* Profile Picture Upload Progress Bar  */}
+				{
+					!profilePicUploadFinished &&
+					<div className="flex justify-center">
+						<Spinner animation="border" />
+					</div>
+					
+				}
+				{/* Profile Image Upload */}
+				<form className='form' onSubmit={uploadProfileImageToFirestore}>
+					<input type='file' accept=".jpg, .jpeg, .png"/>
+					<button type='submit' className="bg-sky-400 hover:bg-sky-500 px-2 py-1 rounded-lg text-white">Upload</button>
+				</form>
+
+				<hr/>
+
+	        	 <Form>	
 	        	 	<h3 className="text-xl mb-3 text-center">Personal Info</h3>
 	        	 	{/*First Name*/}
 					<Form.Group className="mb-3 flex whitespace-nowrap items-center space-x-3" controlId="firstName">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import db from "../firebase";
 import { userConverter, User, CohortGroup } from "../Interfaces+Classes";
+import ProfilePicture from "../components/ProfilePicture";
 
 const Discover = () => {
   const [users, setUsers] = useState<Array<User>>([]);
@@ -104,7 +105,8 @@ const DiscoverUsersView: React.FC<DiscoverUsersViewProps> = ({ users }) => {
     <div className={gridClassname}>
       {
         users.map((user: User, index: number) => {
-          return <div className="bg-white/60 p-5 rounded-md flex flex-col text-center" key={index}>
+          return <div className="bg-white/60 h-60 w-48 p-3 rounded-md flex flex-col text-center" key={index}>
+            <ProfilePicture user={user} imgUrl={user?.profilePictureURL} />
                   <p className="font-bold">{user.firstName} {user.lastName}</p>
                   <p>{user.graduatingYear}</p>
                 </div>

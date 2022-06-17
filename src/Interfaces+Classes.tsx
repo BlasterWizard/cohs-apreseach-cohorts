@@ -28,6 +28,7 @@ export class User {
   graduatingYear: string;
   isAdmin: boolean;
   phoneNumber: string;
+  profilePictureURL: string;
   school: string | undefined;
   major: string | undefined;
   grade: string | undefined;
@@ -41,6 +42,7 @@ export class User {
               graduatingYear: string, 
               isAdmin: boolean, 
               phoneNumber: string,
+              profilePictureURL: string,
               school?: string,
               major?: string,
               grade?: string,
@@ -53,6 +55,7 @@ export class User {
     this.graduatingYear = graduatingYear;
     this.isAdmin = isAdmin;
     this.phoneNumber = phoneNumber;
+    this.profilePictureURL = profilePictureURL;
     this.school = school;
     this.major = major;
     this.grade = grade;
@@ -70,6 +73,7 @@ export const userConverter = {
       graduatingYear: user.graduatingYear,
       isAdmin: user.isAdmin,
       phoneNumber: user.phoneNumber,
+      profilePictureURL: user.profilePictureURL,
       school: user.school ?? "",
       major: user.major ?? "",
       grade: user.grade ?? "",
@@ -86,6 +90,7 @@ export const userConverter = {
       data.graduatingYear, 
       data.isAdmin, 
       data.phoneNumber,
+      data.profilePictureURL,
       data.school ?? "",
       data.major ?? "",
       data.grade ?? "",
