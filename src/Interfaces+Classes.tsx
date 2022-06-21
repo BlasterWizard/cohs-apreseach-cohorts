@@ -18,6 +18,23 @@ export class CohortGroup {
 export interface UserAPResearchInfo {
   APSeminarScore: number;
   APResearchScore: number;
+  APResearchPaperTitle: string;
+  APResearchPaperURL: string;
+}
+
+export interface UserApprovalStatus {
+  isApproved: boolean;
+  deniedReason?: string;
+}
+
+export interface ProfileInfo {
+  graduatingYear: string;
+  phoneNumber: string | undefined;
+  profilePictureURL: string | undefined;
+  school: string | undefined;
+  major: string | undefined;
+  grade: string | undefined;
+  apInfo?: UserAPResearchInfo;
 }
 
 export class User {
@@ -25,41 +42,26 @@ export class User {
   lastName: string;
   studentUID: string;
   studentDocID: string;
-  graduatingYear: string;
   isAdmin: boolean;
-  phoneNumber: string;
-  profilePictureURL: string;
-  school: string | undefined;
-  major: string | undefined;
-  grade: string | undefined;
-  apInfo?: UserAPResearchInfo;
+  profile?: ProfileInfo;
+  approvalStatus: UserApprovalStatus;
 
 
   constructor(firstName: string, 
               lastName: string, 
               studentUID: string, 
               studentDocID: string, 
-              graduatingYear: string, 
               isAdmin: boolean, 
-              phoneNumber: string,
-              profilePictureURL: string,
-              school?: string,
-              major?: string,
-              grade?: string,
-              apInfo?: UserAPResearchInfo
+              profile: ProfileInfo,
+              approvalStatus: UserApprovalStatus
   ) {
     this.firstName = firstName;
     this.lastName = lastName;
     this.studentUID = studentUID;
     this.studentDocID = studentDocID;
-    this.graduatingYear = graduatingYear;
     this.isAdmin = isAdmin;
-    this.phoneNumber = phoneNumber;
-    this.profilePictureURL = profilePictureURL;
-    this.school = school;
-    this.major = major;
-    this.grade = grade;
-    this.apInfo = apInfo;
+    this.profile = profile;
+    this.approvalStatus = approvalStatus;
   }
 }
 
@@ -70,14 +72,9 @@ export const userConverter = {
       lastName: user.lastName,
       studentUID: user.studentUID,
       studentDocID: user.studentDocID,
-      graduatingYear: user.graduatingYear,
       isAdmin: user.isAdmin,
-      phoneNumber: user.phoneNumber,
-      profilePictureURL: user.profilePictureURL,
-      school: user.school ?? "",
-      major: user.major ?? "",
-      grade: user.grade ?? "",
-      apInfo: user.apInfo
+      profile: user.profile,
+      approvalStatus: user.approvalStatus
     }
   },
   fromFirestore: (snapshot: QueryDocumentSnapshot, options: SnapshotOptions) => {
@@ -87,14 +84,9 @@ export const userConverter = {
       data.lastName, 
       data.studentUID, 
       data.studentDocID, 
-      data.graduatingYear, 
       data.isAdmin, 
-      data.phoneNumber,
-      data.profilePictureURL,
-      data.school ?? "",
-      data.major ?? "",
-      data.grade ?? "",
-      data.apInfo
+      data.profile,
+      data.approvalStatus
     );
   }
 }

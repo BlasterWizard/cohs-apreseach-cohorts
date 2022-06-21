@@ -3,20 +3,34 @@ import Form from "react-bootstrap/Form";
 import { Button } from "react-bootstrap";
 import toast from "react-hot-toast";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { User } from "../Interfaces+Classes";
 
-const Home = () => {
+interface HomeProps {
+  currentUser: User | undefined;
+}
+
+const Home: React.FC<HomeProps> = ({ currentUser }) => {
   const [SIEmailAddress, setSIEmailAddress] = useState<string>("");
   const [SIPassword, setSIPassword] = useState<string>("");
+
+  useEffect(() => {
+    if (currentUser != undefined) {
+      if (currentUser?.approvalStatus?.isApproved) {
+        toast.success("Logged In! Welcome!");
+        window.location.href = "/discover";
+
+      } else {
+        window.location.href = "/pendingUserPage";
+      }
+    }
+  }, [currentUser]);
 
   async function signInUser() {
     if (!areSignInFieldsEmpty()) {
       const auth = getAuth();
     signInWithEmailAndPassword(auth, SIEmailAddress, SIPassword)
       .then((userCredential) => {
-        // Signed in
-        // const user = userCredential.user;
-        window.location.href = "/discover";
-        toast.success("Logged In! Welcome!");
+
       })
       .catch((error) => {
         const errorCode = error.code;

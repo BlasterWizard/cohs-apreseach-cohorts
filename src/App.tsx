@@ -11,6 +11,9 @@ import Profile from "./pages/Profile";
 import { User, userConverter } from "./Interfaces+Classes";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import db from "./firebase";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import PendingUserPage from "./pages/PendingUserPage";
+import PageNotFound from "./pages/Special Pages/PageNotFound";
 
 
 function App() {
@@ -59,6 +62,18 @@ function App() {
           console.log("got current user");
           //get current user
           setCurrentUser(doc.data());
+          if (doc.data().isAdmin) {
+            localStorage.setItem("isAdmin", "true");
+          } else {
+            localStorage.setItem("isAdmin", "false");
+          }
+
+          //set appropriate isApproved
+          if (doc.data().approvalStatus.isApproved) {
+            localStorage.setItem("isApproved", "true");
+          } else {
+            localStorage.setItem("isApproved", "false");
+          }
         }
         users.push(doc.data());
       });
@@ -84,12 +99,17 @@ function App() {
                 Home
               </Nav.Link>
             )}
-            {JSON.parse(localStorage.getItem("isLoggedIn")!) && (
+             {JSON.parse(localStorage.getItem("isLoggedIn")!) && JSON.parse(localStorage.getItem("isAdmin")!) && (
+              <Nav.Link className="p-0" href="/adminDashboard">
+                Dashboard
+              </Nav.Link>
+            )}
+            {JSON.parse(localStorage.getItem("isLoggedIn")!) && JSON.parse(localStorage.getItem("isApproved")!) &&(
               <Nav.Link className="p-0" href="/discover">
                 Discover
               </Nav.Link>
             )}
-            {JSON.parse(localStorage.getItem("isLoggedIn")!) && (
+            {JSON.parse(localStorage.getItem("isLoggedIn")!) && JSON.parse(localStorage.getItem("isApproved")!) && (
               <Nav.Link className="p-0" href="/profile">
                 Profile
               </Nav.Link>
@@ -110,9 +130,12 @@ function App() {
       </Navbar>
 
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="*" element={<PageNotFound />} />
+        <Route path="/" element={<Home currentUser={currentUser}/>} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/discover" element={<Discover />} />
+        <Route path="/pendingUserPage" element={<PendingUserPage user={user}/>} />
+        <Route path="/adminDashboard" element={<AdminDashboard users={users}/>} />
+        <Route path="/discover" element={<Discover users={users}/>} />
         <Route path="/profile" element={<Profile user={user} currentUser={currentUser}/>} />
       </Routes>
     </div>

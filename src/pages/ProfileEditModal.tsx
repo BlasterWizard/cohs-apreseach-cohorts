@@ -9,7 +9,7 @@ import { SelectOption } from "../Interfaces+Classes";
 import Select from "react-select";
 import toast from "react-hot-toast";
 import { deleteObject, getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
-import ProfilePicture from "../components/ProfilePicture";
+import ProfilePicture, { ProfilePictureSize } from "../components/ProfilePicture";
 import Spinner from 'react-bootstrap/Spinner';
 
 interface ProfileEditModalProps {
@@ -45,26 +45,24 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, hand
 	const [APResearchScore, setAPResearchScore] = useState<SelectOption>(APTestScoreOptions[5]);
 	const [APSeminarScore, setAPSeminarScore] = useState<SelectOption>(APTestScoreOptions[5]);
 	const [profilePicUploadFinished, setProfilePicUploadFinished] = useState<boolean>(true);
+	const [PEMAPResearchPaperTitle, setPEMAPResearchPaperTitle] = useState<string>("");
+	const [PEMAPResearchPaperURL, setPEMAPResearchPaperURL] = useState<string>("");
 	
 	useEffect(() => {
-		setImgUrl(currentUser?.profilePictureURL ?? "");
+		setImgUrl(currentUser?.profile?.profilePictureURL ?? "");
 		setPEMFirstName(currentUser?.firstName ?? "");
 		setPEMLastName(currentUser?.lastName ?? "");
 		setPEMEmail(user?.email ?? "");
-		setPEMPhoneNumber(currentUser?.phoneNumber ?? "");
-		setPEMSchool(currentUser?.school ?? "");
+		setPEMPhoneNumber(currentUser?.profile?.phoneNumber ?? "");
+		setPEMSchool(currentUser?.profile?.school ?? "");
 		setGradeSelectionOption(gradesOptions[0]);
-		setPEMMajor(currentUser?.major ?? "");
-		setAPSeminarScore(APTestScoreOptions[Math.abs((currentUser?.apInfo?.APSeminarScore ?? 0) - 5)]);
-		setAPResearchScore(APTestScoreOptions[Math.abs((currentUser?.apInfo?.APResearchScore ?? 0) - 5)]);
+		setPEMMajor(currentUser?.profile?.major ?? "");
+		setAPSeminarScore(APTestScoreOptions[Math.abs((currentUser?.profile?.apInfo?.APSeminarScore ?? 0) - 5)]);
+		setAPResearchScore(APTestScoreOptions[Math.abs((currentUser?.profile?.apInfo?.APResearchScore ?? 0) - 5)]);
+		setPEMAPResearchPaperTitle(currentUser?.profile?.apInfo?.APResearchPaperTitle ?? "");
+		setPEMAPResearchPaperURL(currentUser?.profile?.apInfo?.APResearchPaperURL ?? "");
 	}, [user, currentUser]);
 
-	const PEMFirstNameHandler = (e: any) => { setPEMFirstName(e.target.value); }
-	const PEMLastNameHandler = (e: any) => { setPEMLastName(e.target.value); }
-	const PEMEmailHandler = (e: any) => { setPEMEmail(e.target.value); }
-	const PEMPhoneNumberHandler = (e: any) => { setPEMPhoneNumber(e.target.value); }
-	const PEMSchoolHandler = (e: any) => { setPEMSchool(e.target.value); }
-	const PEMSchoolMajorHandler = (e: any) => { setPEMMajor(e.target.value); } 
 
 	async function saveProfileEditChanges() {
 		if (currentUser?.studentDocID != undefined) {
@@ -78,7 +76,9 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, hand
 				phoneNumber: PEMPhoneNumber,
 				apInfo: {
 					APResearchScore: APResearchScore.value,
-					APSeminarScore: APSeminarScore.value
+					APSeminarScore: APSeminarScore.value,
+					APResearchPaperTitle: PEMAPResearchPaperTitle,
+					APResearchPaperURL: PEMAPResearchPaperURL
 				},
 				profilePictureURL: imgUrl
 			}).then(() => {
@@ -89,10 +89,6 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, hand
 			handleEditModal();
 		}
 	}
-
-	const selectGradeSelectOptionHandler = (selectedOption: any) => { setGradeSelectionOption(selectedOption); }
-	const selectAPSeminarScoreSelectOptionHandler = (selectedOption: any) => { setAPSeminarScore(selectedOption); }
-	const selectAPResearchScoreSelectOptionHandler = (selectedOption: any) => { setAPResearchScore(selectedOption); }
 
 	const uploadProfileImageToFirestore = (e: any) => {
 		e.preventDefault();
@@ -125,13 +121,26 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, hand
 		);
 	}
 
+	const PEMFirstNameHandler = (e: any) => { setPEMFirstName(e.target.value); }
+	const PEMLastNameHandler = (e: any) => { setPEMLastName(e.target.value); }
+	const PEMEmailHandler = (e: any) => { setPEMEmail(e.target.value); }
+	const PEMPhoneNumberHandler = (e: any) => { setPEMPhoneNumber(e.target.value); }
+	const PEMSchoolHandler = (e: any) => { setPEMSchool(e.target.value); }
+	const PEMSchoolMajorHandler = (e: any) => { setPEMMajor(e.target.value); } 
+
+	const selectGradeSelectOptionHandler = (selectedOption: any) => { setGradeSelectionOption(selectedOption); }
+	const selectAPSeminarScoreSelectOptionHandler = (selectedOption: any) => { setAPSeminarScore(selectedOption); }
+	const selectAPResearchScoreSelectOptionHandler = (selectedOption: any) => { setAPResearchScore(selectedOption); }
+	const PEMAPResearchPaperTitleHandler = (e: any) => { setPEMAPResearchPaperTitle(e.target.value) };
+	const PEMAPResearchPaperURLHandler = (e: any) => { setPEMAPResearchPaperURL(e.target.value) };
+
 	return (
 		<Modal show={showEditModal} onHide={handleEditModal} centered scrollable>
 		    <Modal.Header closeButton>
 		          <Modal.Title>Edit Profile</Modal.Title>
 	        </Modal.Header>
 	        <Modal.Body>
-				<ProfilePicture user={currentUser} imgUrl={imgUrl} />
+				<ProfilePicture user={currentUser} imgUrl={imgUrl} size={ProfilePictureSize.Large} />
 				{/* Profile Picture Upload Progress Bar  */}
 				{
 					!profilePicUploadFinished &&
@@ -176,7 +185,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, hand
 							<Form.Control value={PEMPhoneNumber} onChange={PEMPhoneNumberHandler} type="text" className="w-1/2" aria-describedby="phoneNumberHelpBlock"/>
 						</div>
 						<Form.Text id="phoneNumberHelpBlock" muted>
-					    	Your phone number must be in this format: (XXX) XXX-XXXX
+					    	<i className="fa-solid fa-triangle-exclamation mr-2 text-red-500"></i> Your phone number must be in this format: (XXX) XXX-XXXX
 				      	</Form.Text>
 					</Form.Group>
 					<hr/>
@@ -223,6 +232,22 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, hand
 						options={APTestScoreOptions}
 						placeholder={3}
 						/>
+					</Form.Group>
+					<Form.Group className="mb-3 flex whitespace-nowrap items-center space-x-3" controlId="apresearchpapertitle">
+						<Form.Label className="font-bold">AP Research Paper Title: </Form.Label>
+						<div className="flex-grow"></div>
+						<Form.Control value={PEMAPResearchPaperTitle} onChange={PEMAPResearchPaperTitleHandler} type="text" className="w-1/2"/>
+					</Form.Group>
+					<Form.Group className="mb-3 flex flex-col whitespace-nowrap" controlId="apresearchpapertitleurl">
+						<div className="flex">
+							<Form.Label className="font-bold">AP Research Paper URL: </Form.Label>
+							<div className="flex-grow"></div>
+							<Form.Control value={PEMAPResearchPaperURL} onChange={PEMAPResearchPaperURLHandler} type="text" className="w-1/2" aria-describedby="apresearchpapertitleurlhelp"/>
+						</div>
+						
+						<Form.Text id="apresearchpapertitleurlhelp" muted>
+						<i className="fa-solid fa-triangle-exclamation mr-2 text-red-500"></i> Please make sure that your link has the correct visibility permissions
+				      	</Form.Text>
 					</Form.Group>
 			    </Form>
 	        </Modal.Body>

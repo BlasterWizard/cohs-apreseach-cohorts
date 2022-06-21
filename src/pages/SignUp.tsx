@@ -48,11 +48,16 @@ const SignUp = () => {
           lastName: SULastName.trim(),
           studentUID: user.uid,
           studentDocID: newUserRef.id,
-          graduatingYear: selectedOption?.value,
-          isAdmin: false
+          profile: {
+            graduatingYear: selectedOption?.value,
+          },
+          isAdmin: false,
+          approvalStatus: {
+            isApproved: false
+          }
         });
         toast.success("Sign Up Successful! Redirecting...");
-        window.location.href = "/discover";
+        window.location.href = "/pendingUserPage";
         console.log("user logged in");
       })
       .catch((error) => {
