@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Form from "react-bootstrap/Form";
 import { Button, Modal } from "react-bootstrap";
-import { User } from "../Interfaces+Classes";
+import { ProfileUser, User } from "../Interfaces+Classes";
 import { UserCredential } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 import db from "../firebase";
@@ -70,17 +70,19 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, hand
 			await updateDoc(currentUserRef, {
 				firstName: PEMFirstName,
 				lastName: PEMLastName,
-				school: PEMSchool,
-				grade: gradeSelectedOption?.value,
-				major: PEMMajor,
-				phoneNumber: PEMPhoneNumber,
-				apInfo: {
-					APResearchScore: APResearchScore.value,
-					APSeminarScore: APSeminarScore.value,
-					APResearchPaperTitle: PEMAPResearchPaperTitle,
-					APResearchPaperURL: PEMAPResearchPaperURL
-				},
-				profilePictureURL: imgUrl
+				profile: {
+					school: PEMSchool,
+					grade: gradeSelectedOption?.value,
+					major: PEMMajor,
+					phoneNumber: PEMPhoneNumber,
+					apInfo: {
+						APResearchScore: APResearchScore.value,
+						APSeminarScore: APSeminarScore.value,
+						APResearchPaperTitle: PEMAPResearchPaperTitle,
+						APResearchPaperURL: PEMAPResearchPaperURL
+					},
+					profilePictureURL: imgUrl
+				}
 			}).then(() => {
 				toast.success("Profile Changes Saved!");
 			}).catch((error) => {
@@ -140,7 +142,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ showEditModal, hand
 		          <Modal.Title>Edit Profile</Modal.Title>
 	        </Modal.Header>
 	        <Modal.Body>
-				<ProfilePicture user={currentUser} imgUrl={imgUrl} size={ProfilePictureSize.Large} />
+				<ProfilePicture user={new ProfileUser(currentUser?.firstName ?? "", currentUser?.lastName ?? "", currentUser?.profile?.profilePictureURL ?? "")} size={ProfilePictureSize.Large} />
 				{/* Profile Picture Upload Progress Bar  */}
 				{
 					!profilePicUploadFinished &&

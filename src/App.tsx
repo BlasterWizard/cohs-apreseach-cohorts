@@ -8,12 +8,13 @@ import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import Discover from "./pages/Discover";
 import Profile from "./pages/Profile";
-import { User, userConverter } from "./Interfaces+Classes";
+import { Announcement, announcementConverter, User, userConverter } from "./Interfaces+Classes";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import db from "./firebase";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import PendingUserPage from "./pages/PendingUserPage";
 import PageNotFound from "./pages/Special Pages/PageNotFound";
+import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
+import { AdminDashboard, AdminDashboardView } from "./pages/admin/AdminDashboard";
 
 
 function App() {
@@ -23,8 +24,10 @@ function App() {
   var [user, setUser] = useState<UserCredential["user"]>();
   const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User>();
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   const allUsersQuery = query(collection(db, "users").withConverter(userConverter));
+  const allAnnouncementsQuery = query(collection(db, "announcements").withConverter(announcementConverter));
 
   useEffect(() => {
     console.log("refresh");
@@ -35,6 +38,7 @@ function App() {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         fetchAndListenToAllUsers(user);
+        fetchAndListenToAnnouncements();
         //User is signed in
         localStorage.setItem("isLoggedIn", "true");
         setUser(user);
@@ -79,7 +83,19 @@ function App() {
       });
       setUsers(users);
     });
-    console.log(currentUser);
+  }
+
+  function fetchAndListenToAnnouncements () {
+    const unsubscribeToAnnouncements = onSnapshot(allAnnouncementsQuery, (querySnapshot) => {
+      const announcements: Announcement[] = [];
+      querySnapshot.forEach((doc) => {
+        announcements.push(doc.data());
+      });
+      announcements.sort(function(a: Announcement, b: Announcement) {
+        return +b.date - +a.date;
+      });
+      setAnnouncements(announcements);
+    });
   }
 
   return (
@@ -100,8 +116,8 @@ function App() {
               </Nav.Link>
             )}
              {JSON.parse(localStorage.getItem("isLoggedIn")!) && JSON.parse(localStorage.getItem("isAdmin")!) && (
-              <Nav.Link className="p-0" href="/adminDashboard">
-                Dashboard
+              <Nav.Link className="p-0" href="/admin/dashboard">
+                Admin
               </Nav.Link>
             )}
             {JSON.parse(localStorage.getItem("isLoggedIn")!) && JSON.parse(localStorage.getItem("isApproved")!) &&(
@@ -134,7 +150,11 @@ function App() {
         <Route path="/" element={<Home currentUser={currentUser}/>} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/pendingUserPage" element={<PendingUserPage user={user}/>} />
-        <Route path="/adminDashboard" element={<AdminDashboard users={users}/>} />
+        <Route path="admin" element={<AdminDashboard />}>
+            <Route path="dashboard" element={<AdminDashboardView users={users} />}/>
+            <Route path="announcements" element={<AdminAnnouncements announcements={announcements} currentUser={currentUser}/>}/>
+            
+        </Route>
         <Route path="/discover" element={<Discover users={users}/>} />
         <Route path="/profile" element={<Profile user={user} currentUser={currentUser}/>} />
       </Routes>

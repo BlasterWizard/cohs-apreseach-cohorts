@@ -1,4 +1,5 @@
 import { QueryDocumentSnapshot, SnapshotOptions } from "firebase/firestore";
+import { validateLocaleAndSetLanguage } from "typescript";
 
 export interface SelectOption {
   value: string | number;
@@ -89,4 +90,60 @@ export const userConverter = {
       data.approvalStatus
     );
   }
+}
+
+export class ProfileUser {
+  firstName: string;
+  lastName: string;
+  profileURL: string | undefined;
+
+  constructor(firstName: string, lastName: string, profileURL: string | undefined) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.profileURL = profileURL;
+  }
+}
+
+//Announcements 
+export class Announcement {
+  title: string;
+  message: string;
+  author: ProfileUser;
+  date: Date;
+  id: string;
+
+  constructor(title: string, message: string, author: ProfileUser, date: Date, id: string) {
+    this.title = title;
+    this.message = message;
+    this.author = author;
+    this.date = date;
+    this.id = id;
+  }
+}
+
+export const announcementConverter = {
+  toFirestore: (announcement: Announcement) => {
+    return {
+      title: announcement.title,
+      message: announcement.message,
+      author: announcement.author,
+      date: announcement.date,
+      id: announcement.id
+    }
+  },
+  fromFirestore: (snapshot: QueryDocumentSnapshot, options: SnapshotOptions) => {
+    const data = snapshot.data(options);
+    return new Announcement(
+      data.title,
+      data.message,
+      data.author,
+      data.date.toDate(),
+      data.id
+    );
+  }
+}
+
+export enum NodeDisplayStatus {
+  Display,
+  Edit
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CohortGroup, User } from "../../Interfaces+Classes";
+import { CohortGroup, User, ProfileUser } from "../../Interfaces+Classes";
 import { determineCohortGroups } from "../../HelperFunctions";
 import ProfilePicture, { ProfilePictureSize } from "../../components/ProfilePicture";
 import { Button, Modal } from "react-bootstrap";
@@ -8,12 +8,50 @@ import db from "../../firebase";
 import { updateDoc, doc } from "firebase/firestore";
 import Spinner from 'react-bootstrap/Spinner';
 import UnauthorizedAccess from "../Special Pages/UnauthorizedAccess";
+import { Link, Outlet } from "react-router-dom";
+import Profile from "../Profile";
 
 interface AdminDashboardProps {
     users: User[];
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ users }) => {
+export const AdminDashboard = () => {
+    return (
+        <main>
+            <div className="flex w-full">
+                <div className="flex-grow"></div>
+                <div className="flex w-fit space-x-3 m-2 bg-white/30 rounded-lg p-2">
+                    {/* Dashboard Button  */}
+                    <Link to="/admin/dashboard">
+                        <button type="button" className="bg-white/60 px-2 py-1 rounded-lg flex items-center space-x-3">
+                            <p className="font-bold no-underline">Dashboard</p>
+                        </button>
+                    </Link>
+                    {/* Announcements Button */}
+                    <Link to="/admin/announcements">
+                        <button type="button" className="bg-white/60 px-2 py-1 rounded-lg flex items-center space-x-3">
+                            <p className="font-bold no-underline">Announcements</p>
+                            <i className="fa-solid fa-bullhorn"></i>
+                        </button>
+                    </Link>
+
+                    {/* Settings Button  */}
+                    <Link to="/admin/settings">
+                        <button type="button" className="bg-white/60 px-2 py-1 rounded-lg flex items-center space-x-3">
+                            <p className="font-bold">Settings</p>
+                            <i className="fa-solid fa-gear"></i>
+                        </button>
+                    </Link>
+                </div>
+            </div>
+            
+
+            <Outlet />
+        </main>
+    );
+}
+
+export const AdminDashboardView: React.FC<AdminDashboardProps> = ({ users }) => {
     const [cohortGroups, setCohortGroups] = useState<CohortGroup[]>([]);
     const [pendingUsers, setPendingUsers] = useState<User[]>([]);
 
@@ -33,7 +71,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ users }) => {
     }
     
     return (
-        <main>
+        <>
             {
               (JSON.parse(localStorage.getItem("isLoggedIn")!) && JSON.parse(localStorage.getItem("isApproved")!)) 
                 ? 
@@ -43,7 +81,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ users }) => {
                 :
                 <UnauthorizedAccess />
             }
-        </main>
+        </>
     );
 }
 
@@ -55,7 +93,7 @@ interface ApprovedAdminDashboardViewProps {
 const ApprovedAdminDashboardView: React.FC<ApprovedAdminDashboardViewProps> = ({ pendingUsers, cohortGroups }) => {
     return (
         <>
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
             {
                 pendingUsers.length > 0 &&
                 <div className="my-5 bg-white/60 p-3 rounded-lg w-full max-w-3xl">
@@ -107,7 +145,7 @@ interface HorizontalDiscoverUserViewProps {
 const HorizontalDiscoverUserView: React.FC<HorizontalDiscoverUserViewProps> = ({ user }) => {
     return (
         <div className="space-x-5 bg-white/60 w-3/4 max-w-lg p-2 rounded-md flex text-center items-center">
-            <ProfilePicture user={user} imgUrl={user?.profile?.profilePictureURL ?? ""} size={ProfilePictureSize.Small}/>
+            <ProfilePicture user={new ProfileUser(user.firstName, user.lastName, user.profile?.profilePictureURL)} size={ProfilePictureSize.Small}/>
             <p className="font-bold">{user.firstName} {user.lastName}</p>
         </div>
     );
@@ -130,8 +168,8 @@ const HorizontalPendingUserView: React.FC<HorizontalPendingUserViewProps> = ({ u
     }
 
     return (
-        <div className="space-x-3 bg-white/60 w-3/4 max-w-lg  min-x-md p-2 rounded-md flex text-center items-center">
-            <ProfilePicture user={user} imgUrl={user?.profile?.profilePictureURL ?? ""} size={ProfilePictureSize.Small}/>
+        <div className="space-x-3 bg-white/60 w-3/4 max-w-lg min-x-md p-2 rounded-md flex text-center items-center">
+            <ProfilePicture user={new ProfileUser(user.firstName, user.lastName, user.profile?.profilePictureURL)} size={ProfilePictureSize.Small}/>
             <div className="flex flex-col">
                 <p className="font-bold whitespace-nowrap text-left">{user.firstName} {user.lastName}</p>
                 <p className='text-slate-400 text-sm text-left'>Graduated in {user.profile?.graduatingYear}</p>
@@ -177,6 +215,3 @@ const DeletePendingUserModal: React.FC<DeletePendingUserModalProps> = ({ showMod
         </Modal>
     );
 }
-
-
-export default AdminDashboard;

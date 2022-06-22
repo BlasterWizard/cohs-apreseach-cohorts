@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { User, CohortGroup } from "../Interfaces+Classes";
+import { User, CohortGroup, ProfileUser } from "../Interfaces+Classes";
 import ProfilePicture, { ProfilePictureSize } from "../components/ProfilePicture";
 import { determineCohortGroups } from "../HelperFunctions";
 import { Spinner } from "react-bootstrap";
@@ -43,7 +43,7 @@ const CohortGroupsView: React.FC<CohortGroupsViewProps> = ({ cohortGroups }) => 
       {
         cohortGroups.map((cohortGroup: CohortGroup, index: number) => {
           return <div key={index} className="m-5 w-full space-y-5">
-            <h3 className="font-bold text-3xl">{cohortGroup.year}</h3>
+            <h3 className="font-bold text-3xl text-white">{cohortGroup.year}</h3>
             <DiscoverUsersView users={cohortGroup.users}/>
             {
               (index === cohortGroups.length) &&  <hr/>
@@ -80,9 +80,9 @@ const DiscoverUsersView: React.FC<DiscoverUsersViewProps> = ({ users }) => {
     <div className={gridClassname}>
       {
         users.map((user: User, index: number) => {
-          return <div className="bg-white/60 h-60 w-48 p-3 rounded-md flex flex-col text-center" key={index}>
-                    <ProfilePicture user={user} imgUrl={user?.profile?.profilePictureURL ?? ""} size={ProfilePictureSize.Large}/>
-                    <p className="font-bold">{user.firstName} {user.lastName}</p>
+          return <div className="bg-white/60 h-fit w-48 p-3 rounded-md flex flex-col text-center" key={index}>
+                    <ProfilePicture user={new ProfileUser(user.firstName, user.lastName, user.profile?.profilePictureURL)} size={ProfilePictureSize.Large}/>
+                    <p className="font-bold mt-3">{user.firstName} {user.lastName}</p>
                     <p>{user.profile?.graduatingYear}</p>
                 </div>
         })
