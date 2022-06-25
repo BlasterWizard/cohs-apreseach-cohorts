@@ -149,13 +149,12 @@ function App() {
         <Route path="*" element={<PageNotFound />} />
         <Route path="/" element={<Home currentUser={currentUser}/>} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/pendingUserPage" element={<PendingUserPage user={user}/>} />
+        <Route path="/pendingUserPage" element={<PendingUserPage user={user} currentUser={currentUser}/>} />
         <Route path="admin" element={<AdminDashboard />}>
             <Route path="dashboard" element={<AdminDashboardView users={users} />}/>
-            <Route path="announcements" element={<AdminAnnouncements announcements={announcements} currentUser={currentUser}/>}/>
-            
+            <Route path="adminAnnouncements" element={<AdminAnnouncements announcements={announcements} currentUser={currentUser}/>}/>
         </Route>
-        <Route path="/discover" element={<Discover users={users}/>} />
+        <Route path="/discover" element={<Discover users={users} announcements={announcements}/>} />
         <Route path="/profile" element={<Profile user={user} currentUser={currentUser}/>} />
       </Routes>
     </div>

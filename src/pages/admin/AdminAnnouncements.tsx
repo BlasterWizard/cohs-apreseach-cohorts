@@ -69,7 +69,7 @@ const AnnouncementsListView: React.FC<AdminAnnouncementsProps> = ({ announcement
             <h1 className="text-3xl font-bold">Manage Announcements</h1>
             {
                 addNewAnnouncementMode &&
-                    <div className="flex flex-col m-3 bg-white/60 p-3 rounded-lg w-1/2">
+                    <div className="flex flex-col m-3 bg-white/60 p-3 rounded-lg w-3/4 max-w-2xl">
                     {/* Header  */}
                     <div className="flex items-center mb-3">
                         <h2 className="font-bold">New Announcement</h2>
@@ -105,21 +105,23 @@ const AnnouncementsListView: React.FC<AdminAnnouncementsProps> = ({ announcement
                     <p>Post New Announcement</p>
                 </button>
             }
-            {
-                announcements.map((announcement: Announcement, index: number) => {
-                    return <AnnouncementView announcement={announcement} key={index} displayStatus={NodeDisplayStatus.Display}/>
-                })
-            }
+            <div className="space-y-2 w-full flex flex-col items-center">
+                {
+                    announcements.map((announcement: Announcement, index: number) => {
+                        return <AdminAnnouncementView announcement={announcement} key={index} displayStatus={NodeDisplayStatus.Display}/>
+                    })
+                }
+            </div>
         </>
     );
 }
 
-interface AnnouncementViewProps {
+interface AdminAnnouncementViewProps {
     announcement: Announcement;
     displayStatus: NodeDisplayStatus;
 }
 
-const AnnouncementView: React.FC<AnnouncementViewProps> = ({ announcement, displayStatus }) => {
+const AdminAnnouncementView: React.FC<AdminAnnouncementViewProps> = ({ announcement, displayStatus }) => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [bgColorClassName, setBgColorClassName] = useState("");
 
@@ -208,7 +210,7 @@ const AnnouncementEditModal: React.FC<AnnouncementEditModalProps> = ({ showModal
           <button className="bg-gray-300/60 rounded-full px-2 py-0.3 text-slate-400" onClick={hideModal}><i className="fa-solid fa-xmark"></i></button>
         </Modal.Header>
         <Modal.Body className="flex flex-col items-center space-y-3">
-            <AnnouncementView announcement={announcement} displayStatus={NodeDisplayStatus.Edit}/>
+            <AdminAnnouncementView announcement={announcement} displayStatus={NodeDisplayStatus.Edit}/>
             <i className="fa-solid fa-arrow-down"></i>
             <div className="flex flex-col bg-blue-200/70 rounded-lg p-3 w-3/4 max-w-lg">
                 <div className="flex items-center text-center mb-2">

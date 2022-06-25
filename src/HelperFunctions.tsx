@@ -23,7 +23,7 @@ export async function getAvailableGraduatingYears() {
       if (user.approvalStatus.isApproved) {
         //check to see if there's already a cohort group with the same year as {user}
         const indexOfUserInNewCohortGroups = isUserAlreadyInCohortGroups(user, newCohortGroups);
-        if (indexOfUserInNewCohortGroups > 0) {
+        if (indexOfUserInNewCohortGroups >= 0) {
           newCohortGroups[indexOfUserInNewCohortGroups].users.push(user);
         } else {
             //if not create new CohortGroup
@@ -44,7 +44,6 @@ export async function getAvailableGraduatingYears() {
       } 
       return 0;
     });
-    
     return newCohortGroups;
   }
 

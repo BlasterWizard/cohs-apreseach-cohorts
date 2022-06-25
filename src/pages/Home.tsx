@@ -60,7 +60,7 @@ const Home: React.FC<HomeProps> = ({ currentUser }) => {
     <>
       <main>
         <h1 className="text-4xl text-center font-bold p-5">
-          COHS AP Research Connect
+          COHS AP Capstone Connect
         </h1>
 
         {/* Sign In Hero */}

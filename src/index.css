@@ -11,8 +11,19 @@ hr {
   padding: 0; 
 }
 
-*:focus {
-  outline: none;
+.muted-hr {
+  display: block; 
+  height: 1px;
+  border: 0; 
+  border-top: 1px solid gray;
+  margin: 1em 0; 
+  padding: 0; 
+}
+
+.no-focus {
+  outline-style: none;
+  box-shadow: none;
+  border-color: transparent;
 }
 
 .clip-circle {

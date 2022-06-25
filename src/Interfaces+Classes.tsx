@@ -36,6 +36,7 @@ export interface ProfileInfo {
   major: string | undefined;
   grade: string | undefined;
   apInfo?: UserAPResearchInfo;
+  visibleAttributes: string[];
 }
 
 export class User {
@@ -147,3 +148,23 @@ export enum NodeDisplayStatus {
   Display,
   Edit
 }
+
+export enum ProfileAttributeType {
+  Email,
+  PhoneNumber,
+  College,
+  CurrentGrade,
+  Major,
+  APSeminarTestScore,
+  APResearchTestScore,
+  APSeminarPaperTitle,
+  APSeminarPaperURL,
+  APResearchPaperTitle,
+  APResearchPaperURL
+}
+
+// namespace ProfileAttributeType {
+//   export function toString(type: ProfileAttributeType): string {
+//     return 
+//   }
+// }

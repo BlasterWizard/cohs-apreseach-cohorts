@@ -9,7 +9,8 @@ import { updateDoc, doc } from "firebase/firestore";
 import Spinner from 'react-bootstrap/Spinner';
 import UnauthorizedAccess from "../Special Pages/UnauthorizedAccess";
 import { Link, Outlet } from "react-router-dom";
-import Profile from "../Profile";
+import toast from "react-hot-toast";
+import PaginationLinkButton from "../../components/PaginationLinkButton";
 
 interface AdminDashboardProps {
     users: User[];
@@ -22,26 +23,11 @@ export const AdminDashboard = () => {
                 <div className="flex-grow"></div>
                 <div className="flex w-fit space-x-3 m-2 bg-white/30 rounded-lg p-2">
                     {/* Dashboard Button  */}
-                    <Link to="/admin/dashboard">
-                        <button type="button" className="bg-white/60 px-2 py-1 rounded-lg flex items-center space-x-3">
-                            <p className="font-bold no-underline">Dashboard</p>
-                        </button>
-                    </Link>
+                    <PaginationLinkButton link={"/admin/dashboard"} destinationName={"Dashboard"} />
                     {/* Announcements Button */}
-                    <Link to="/admin/announcements">
-                        <button type="button" className="bg-white/60 px-2 py-1 rounded-lg flex items-center space-x-3">
-                            <p className="font-bold no-underline">Announcements</p>
-                            <i className="fa-solid fa-bullhorn"></i>
-                        </button>
-                    </Link>
-
+                    <PaginationLinkButton link={"/admin/adminAnnouncements"} destinationName={"Announcements"} />
                     {/* Settings Button  */}
-                    <Link to="/admin/settings">
-                        <button type="button" className="bg-white/60 px-2 py-1 rounded-lg flex items-center space-x-3">
-                            <p className="font-bold">Settings</p>
-                            <i className="fa-solid fa-gear"></i>
-                        </button>
-                    </Link>
+                    <PaginationLinkButton link={"/admin/adminSettings"} destinationName={"Settings"} />
                 </div>
             </div>
             
@@ -91,6 +77,10 @@ interface ApprovedAdminDashboardViewProps {
 }
 
 const ApprovedAdminDashboardView: React.FC<ApprovedAdminDashboardViewProps> = ({ pendingUsers, cohortGroups }) => {
+    const [isEditing, setIsEditing] = useState(false);
+
+    const toggleIsEditing = () => setIsEditing(!isEditing);
+
     return (
         <>
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>
@@ -111,16 +101,25 @@ const ApprovedAdminDashboardView: React.FC<ApprovedAdminDashboardViewProps> = ({
            
             {/* Manage Cohorts  */}
             <div className="my-5 bg-white/60 p-3 rounded-lg w-full max-w-3xl">
-                <h1 className="text-2xl font-bold my-2">Manage Cohorts</h1>
+                <div className="flex items-center">
+                    <h1 className="text-2xl font-bold my-2">Manage Cohorts</h1>
+                    <div className="flex-grow"></div>
+                    <button className="font-bold text-white bg-violet-300 hover:bg-violet-400 px-2 h-7 rounded-lg" onClick={toggleIsEditing}>
+                        {
+                            !isEditing ? <p>Edit</p> : <p>Done</p>
+                        }
+                    </button>
+                </div>
+
                 {
                     cohortGroups.map((cohortGroup: CohortGroup, index: number) => {
                     return <div key={index} className=" w-full space-y-5">
                         <h3 className="font-bold text-3xl text-white">{cohortGroup.year}</h3>
                         {
-                            <div className="flex justify-center">
+                            <div className="flex flex-col items-center space-y-2">
                                 {
                                     cohortGroup.users.map((user: User, index: number) => {
-                                        return <HorizontalDiscoverUserView user={user} key={index} />
+                                        return <HorizontalDiscoverUserView user={user} key={index} isEditing={isEditing}/>
                                     })
                                 }
                             </div>
@@ -140,13 +139,23 @@ const ApprovedAdminDashboardView: React.FC<ApprovedAdminDashboardViewProps> = ({
 // HorizontalDiscoverUserView 
 interface HorizontalDiscoverUserViewProps {
     user: User;
+    isEditing: boolean;
 }
   
-const HorizontalDiscoverUserView: React.FC<HorizontalDiscoverUserViewProps> = ({ user }) => {
+const HorizontalDiscoverUserView: React.FC<HorizontalDiscoverUserViewProps> = ({ user, isEditing }) => {
     return (
-        <div className="space-x-5 bg-white/60 w-3/4 max-w-lg p-2 rounded-md flex text-center items-center">
-            <ProfilePicture user={new ProfileUser(user.firstName, user.lastName, user.profile?.profilePictureURL)} size={ProfilePictureSize.Small}/>
-            <p className="font-bold">{user.firstName} {user.lastName}</p>
+        <div className="bg-white/60 w-3/4 max-w-lg p-2 rounded-md flex text-center items-center">
+            <div className="space-x-3 flex items-center">
+                <ProfilePicture user={new ProfileUser(user.firstName, user.lastName, user.profile?.profilePictureURL)} size={ProfilePictureSize.Small}/>
+                <p className="font-bold">{user.firstName} {user.lastName}</p>
+            </div> 
+            <div className="flex-grow"></div>
+            {
+                isEditing && 
+                <div className="flex">
+                    <button className="bg-red-300 hover:bg-red-400 w-8 h-8 rounded-full"><i className="fa-solid fa-xmark text-white"></i></button>
+                </div>
+            }
         </div>
     );
 }
@@ -176,10 +185,16 @@ const HorizontalPendingUserView: React.FC<HorizontalPendingUserViewProps> = ({ u
             </div>
             <div className="flex-grow"></div>
             <div className="space-x-5 px-2 whitespace-nowrap">
-                <button className="bg-emerald-300 hover:bg-emerald-400 w-8 h-8 rounded-full" onClick={acceptPendingRequest}><i className="fa-solid fa-check text-white"></i></button>
-                <button className="bg-red-300 hover:bg-red-400 w-8 h-8 rounded-full" onClick={handleShowDeleteConfirmationModal}><i className="fa-solid fa-xmark text-white"></i></button>
+                {
+                    user.approvalStatus.deniedReason === undefined ?
+                    <>
+                        <button className="bg-emerald-300 hover:bg-emerald-400 w-8 h-8 rounded-full" onClick={acceptPendingRequest}><i className="fa-solid fa-check text-white"></i></button>
+                        <button className="bg-red-300 hover:bg-red-400 w-8 h-8 rounded-full" onClick={handleShowDeleteConfirmationModal}><i className="fa-solid fa-xmark text-white"></i></button>
+                    </> :
+                    <p className="bg-red-400 px-2 py-0.5 rounded-full text-white font-bold">Rejected</p>
+                }
             </div>
-            <DeletePendingUserModal showModal={showDeleteConfirmationModal} handleModal={handleShowDeleteConfirmationModal} />
+            <DeletePendingUserModal showModal={showDeleteConfirmationModal} handleModal={handleShowDeleteConfirmationModal} user={user}/>
         </div>
     );
 }
@@ -187,12 +202,26 @@ const HorizontalPendingUserView: React.FC<HorizontalPendingUserViewProps> = ({ u
 interface DeletePendingUserModalProps {
     showModal: boolean;
     handleModal: () => void;
+    user: User;
 }
 
-const DeletePendingUserModal: React.FC<DeletePendingUserModalProps> = ({ showModal, handleModal }) => {
+const DeletePendingUserModal: React.FC<DeletePendingUserModalProps> = ({ showModal, handleModal, user }) => {
     const [rejectionReasonText, setRejectionReasonText] = useState<string>("");
 
     const handleRejectionReasonText = (e: any) => { setRejectionReasonText(e.target.value) };
+
+    async function confirmRejectPendingRequest() {
+        await updateDoc(doc(db, "users", user.studentDocID), {
+            approvalStatus: {
+                deniedReason: rejectionReasonText
+            }
+        }).then(() => {
+            toast.success("Pending request successfully rejected");
+            handleModal();
+        }).catch((error) => {
+            toast.error(error.message);
+        });
+    }
 
     return (
         <Modal show={showModal} onHide={handleModal} centered>
@@ -210,7 +239,7 @@ const DeletePendingUserModal: React.FC<DeletePendingUserModalProps> = ({ showMod
 
             <Modal.Footer>
                 <Button variant="secondary" className="bg-red-400 hover:bg-red-500" onClick={handleModal}>Cancel</Button>
-                <Button variant="primary" className="bg-green-400 hover:bg-green-500">Confirm</Button>
+                <Button variant="primary" className="bg-green-400 hover:bg-green-500" onClick={confirmRejectPendingRequest}>Confirm</Button>
             </Modal.Footer>
         </Modal>
     );

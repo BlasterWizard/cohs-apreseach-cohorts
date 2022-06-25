@@ -19,7 +19,6 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({ user, size }) => {
 
     useEffect(() => {
         determineProfilePictureClassName();
-        console.log(user.profileURL);
     }, []);
 
     const determineProfilePictureClassName = () => {
